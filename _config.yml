@@ -2,7 +2,7 @@ title:              Clean Blog
 email:              gchaixx@163.com
 description:        A Blog Theme by Start Bootstrap
 author:             Start Bootstrap
-baseurl:            "/"
+# baseurl:            "/"
 url:                "https://Xuezha-Guo.github.io"
 
 # Social Profiles
