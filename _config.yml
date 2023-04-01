@@ -1,13 +1,13 @@
-title:              Clean Blog
+title:              GCH Blog
 email:              gchaixx@163.com
-description:        A Blog Theme by Start Bootstrap
-author:             Start Bootstrap
+description:        A Blog by GCH
+author:             GCH
 # baseurl:            "/"
 # url:                "https://Xuezha-Guo.github.io"
 
 # Social Profiles
 twitter_username:   SBootstrap
-github_username:    StartBootstrap
+github_username:    Xuezha-Guo
 facebook_username:  StartBootstrap
 instagram_username:  
 linkedin_username:
@@ -16,7 +16,7 @@ linkedin_username:
 
 
 # Add your google-analytics ID here to activate google analytics
-google_analytics:   UA-XXXXXXXXX-X # out your google-analytics code
+# google_analytics:   UA-XXXXXXXXX-X # out your google-analytics code
 
 # Build settings
 markdown:           kramdown
