@@ -1,0 +1,39 @@
+---
+layout: post
+title: "GCH 2023-04-23 blog"
+subtitle: "本周学习记录"
+date: 2023-04-23 10:00:13 +0800
+background: '/img/posts/06.jpg'
+---
+
+<p>2023-04-16至2023-04-23学习记录</p>
+
+<h2 class="section-heading">一、IDEA配置相关问题</h2>
+<p>使用IDEA学习时遇到无法编译的问题，经过排查解决如下</p>
+<blockquote class="blockquote">问题如下</blockquote>
+<blockquote>打开 IDEA ，点击 Remote Development -> SSH ，然后依次选择 IDE 版本和项目目录。打开之后编写代码并点击运行，运行失败报错：</blockquote>
+{% highlight java linenos %}
+java: Cannot run program "/usr/local/jdk_1.8/bin/java" (in directory "/home/XXXX/.cache/JetBrains/RemoteDev-IU/_home_XXXX_Projects_demo/compile-server"): error=0, Failed to exec spawn helper: pid: 2483, exit value: 1
+{% endhighlight %}
+<blockquote class="blockquote">解决如下</blockquote>
+<img class="img-fluid" src="/img/04-23-01.png" alt="Demo Image">
+<span class="caption text-muted">取消勾选 Use ‘--release’ option for cross-compliation(java9 and later)</span>
+<span class="caption text-muted">取消勾选 Use coompiler from module target JDK when possible</span>
+<span class="caption text-muted">或指定Project bytecode version</span>
+
+
+<h2 class="section-heading">二、JavaSE学习相关</h2>
+<p>重新看了下集合、注解、泛型异常的相关内容，还得看看反射，熟悉一下API</p>
+
+<h2 class="section-heading">三、SSM相关</h2>
+<p>查看SSM权限项目源码，基本的maven配置、框架逻辑、注解、orm有了一定的了解</p>
+
+<h2 class="section-heading">四、JPA相关</h2>
+<p>既然让看JPA，公司估计是SSH？还没看SSH，但一看就感觉比SSM复杂且落后之</p>
+
+
+<h2 class="section-heading">五、MQ</h2>
+<p>PDF看了一点</p>
+
+
+
