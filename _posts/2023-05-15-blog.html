@@ -1,0 +1,367 @@
+---
+layout: post
+title: "GCH 2023-05-15 blog"
+subtitle: "本周学习记录"
+date: 2023-05-15 8:00:13 +0800
+background: '/img/posts/06.jpg'
+---
+
+<p>2023-05-15学习记录</p>
+
+<h2 class="section-heading">一、Java ThreadLocal</h2>
+<p>even if the threadlocal instance is the same object, the values kept internally
+    will depend on what thread sets them and gets them
+</p>
+{% highlight java linenos %}
+    public class java_threadlocal {
+        public static void main(String[] args) {
+            ThreadLocal<String> threadLocal =  new ThreadLocal<>();
+            Thread thread1 = new Thread(() -> {
+                threadLocal.set("Thread 1");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                String value = threadLocal.get();
+                System.out.println(value);
+            });
+
+            Thread thread2 = new Thread(() -> {
+                threadLocal.set("Thread 2");
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                String value = threadLocal.get();
+                System.out.println(value);
+            });
+
+            thread1.start();
+            thread2.start();
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    Thread 1
+    <br>
+    Thread 2
+</blockquote>
+<img class="img-fluid" src="/img/05-15-01.png" alt="Demo Image">
+<blockquote>(上述结果顺序不定)多个线程设置一个值发送给threadLocal不会覆盖彼此的值</blockquote>
+<blockquote>threadLocal有set get remove 方法</blockquote>
+
+{% highlight java linenos %}
+        ThreadLocal<Object> threadLocal1 =
+            new ThreadLocal() {
+                protected Object initialValue() {
+                    return new Object();
+                }
+            };
+
+        // 与threadLocal1功能相同，实现方式不同
+        ThreadLocal<Object> threadLocal2 =
+            ThreadLocal.withInitial(() -> {
+                return new Object();
+            });
+
+        Thread thread3 = new Thread( () -> {
+        System.out.println("threadLocal1: " + threadLocal1.get());
+        System.out.println("threadLocal2: " + threadLocal2.get());
+        });
+        Thread thread4 = new Thread( () -> {
+        System.out.println("threadLocal1: " + threadLocal1.get());
+        System.out.println("threadLocal2: " + threadLocal2.get());
+        });
+
+        thread3.start();
+        thread4.start();
+{% endhighlight %}
+<blockquote class="blockquote">
+    threadLocal1: java.lang.Object@4501ee3a
+    <br>
+    threadLocal2: java.lang.Object@4bc618ea
+    <br>
+    threadLocal1: java.lang.Object@39ac4f34
+    <br>
+    threadLocal2: java.lang.Object@376ba671
+</blockquote>
+<blockquote>得到四个不同的实例对象</blockquote>
+
+{% highlight java linenos %}
+    ThreadLocal<String> threadLocal3 = new ThreadLocal<>();
+    String value1 = threadLocal3.get();
+    if (value1==null) {
+        threadLocal3.set("Lazily set value");
+        value1 = threadLocal3.get();
+    }
+    System.out.println(value1);
+{% endhighlight %}
+<blockquote>懒加载模式，可用于设定日期等场景</blockquote>
+
+<img class="img-fluid" src="/img/05-15-02.png" alt="Demo Image">
+<span class="caption text-muted">在执行task时，在threadLocal中存储的value不会对每个task都是完全unique的，只对每个执行线程thread是unique的</span>
+<span class="caption text-muted">确保没有reuse 被另一个thread存储的value</span>
+<span class="caption text-muted">或指定Project bytecode version</span>
+
+
+{% highlight java linenos %}
+    public class InheritableThreadLocalBasicExample {
+        public static void main(String[] args) {
+            ThreadLocal<String> threadLocal = new ThreadLocal<>();
+            InheritableThreadLocal<String> inheritableThreadLocal =
+                    new InheritableThreadLocal<>();
+
+            Thread thread1 = new Thread(() -> {
+                System.out.println("==== Thread 1 ====");
+                threadLocal.set("Thread 1 - ThreadLocal");
+                inheritableThreadLocal.set("Thread 1 - InheritableThreadLocal");
+
+                System.out.println(threadLocal.get());
+                System.out.println(inheritableThreadLocal.get());
+
+                Thread childThread = new Thread(() -> {
+                    System.out.println("==== ChildThread ====");
+                    System.out.println(threadLocal.get());
+                    System.out.println(inheritableThreadLocal.get());
+                });
+                childThread.start();
+            });
+
+            thread1.start();
+
+            Thread thread2 = new Thread(() -> {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                System.out.println("==== Thread2 ====");
+                System.out.println(threadLocal.get());
+                System.out.println(inheritableThreadLocal.get());
+            });
+
+            thread2.start();
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    ==== Thread 1 ====
+    <br>
+    Thread 1 - ThreadLocal
+    <br>
+    Thread 1 - InheritableThreadLocal
+    <br>
+    ==== ChildThread ====
+    <br>
+    null
+    <br>
+    Thread 1 - InheritableThreadLocal
+    <br>
+    ==== Thread2 ====
+    <br>
+    null
+    <br>
+    null
+</blockquote>
+<blockquote>可继承threadLocal</blockquote>
+
+
+<h2 class="section-heading">二、NullPointerException</h2>
+<p>初始化尽量不要设为null</p>
+{% highlight java linenos %}
+    myCat.getName().equals("Newman")
+    "Newman".equals(myCat.getName())
+{% endhighlight %}
+<p>用第二行的语句更有利于避免NPE异常</p>
+
+<h2 class="section-heading">三、Design Patterns</h2>
+<p>
+    1. Creational Patterns
+    <br>
+        1.1 Factory(不知具体过程)
+        <br>
+        1.2 Builder(不需要一次传所有参数)
+        <br>
+        1.3 Singleton(用户不用反复创建 python的@staticmethod)
+        <br>
+    2. Structural Patterns
+    <br>
+        2.1 Adapter
+        <br>
+        2.2 Facade(a wrapper class can be used to abstract lower details)
+        <br>
+    3. Behavioral Patterns
+    <br>
+        3.1 Observer(Pub Sub)
+        <br>
+        3.2 Iterator 
+        <br>
+        3.3 Strategy(open-closed principle:open-for extension; closed-for modifications)
+</p>
+
+<h2 class="section-heading">四、System Design</h2>
+<p>
+    1.
+    <br>
+        1.1 Vertical Scaling: add/update resources, RAM\CPU
+        <br>
+        1.2 Horizontal Scaling: 增加副本,提高冗余和容错
+        <br>
+        1.3 Load Balancer: 负载均衡->reverse proxy反向代理\hash
+        <br>
+        1.4 CDN(content delivery network): 托管文件
+        <br>
+        1.5 Caching: HDD->RAM-CPU Cache(L1,L2,L3)
+        <br>
+    2.
+    <br>
+        2.1 IP Address
+        <br>
+        2.2 TCP/IP
+        <br>
+        2.3 DNS
+        <br>
+        2.4 HTTP
+        <br>
+    3.
+    <br>
+        3.1 REST
+        <br>
+        3.2 GrapgQL:获取新资源不再发送新请求, a query request, 从resource中choose
+        <br>
+        3.3 gRPC: Protocol Buffers vs JSON
+        <br>
+        3.4 WebSockets: 避免轮询 双工通道
+        <br>
+    4.
+    <br>
+        4.1 SQL
+        <br>
+        4.2 NoSQL: 没有一致性，没有外键约束，可以横向扩展
+        <br>
+        4.3 Sharding: 分片
+        <br>
+        4.4 Replication
+        <br>
+        4.5 CAP Theorem: 数据一致性和数据可用性二选一
+        <br>
+        4.6 Message Queues
+</p>
+
+
+<h2 class="section-heading">五、Vectors & ArrayList</h2>
+<p>
+
+</p>
+{% highlight java linenos %}
+public class VandA {
+    public static void main(String[] args) throws InterruptedException {
+        int size = 1000000;
+
+        List<Integer> arrayList = new ArrayList<>();
+        long start = System.currentTimeMillis();
+
+        for (int i=0; i<size; i++) {
+            arrayList.add(i);
+        }
+
+        long end = System.currentTimeMillis();
+        System.out.println("time1: " + (end - start));
+
+        List<Integer> vector = new Vector<>();
+        start = System.currentTimeMillis();
+
+        for (int i=0; i<size; i++) {
+            vector.add(i);
+        }
+
+        end = System.currentTimeMillis();
+        System.out.println("time2: " + (end - start));
+
+
+        List<Integer> multithreadedList = new ArrayList<>();
+        // 线程安全的方式
+        // List<Integer> multithreadedList = Collections.synchronizedList(new ArrayList<>());
+        start = System.currentTimeMillis();
+        Thread t1 = new Thread(() -> {
+            for (int i=0; i<size; i++) {
+                multithreadedList.add(i);
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            for (int i=0; i<size; i++) {
+                multithreadedList.add(i);
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        end = System.currentTimeMillis();
+        System.out.println("time3: " + (end - start));
+        System.out.println("size1: " + multithreadedList.size());
+
+        List<Integer> multithreadedVector = new Vector<>();
+        start = System.currentTimeMillis();
+        t1 = new Thread(() -> {
+            for (int i=0; i<size; i++) {
+                multithreadedVector.add(i);
+            }
+        });
+        t2 = new Thread(() -> {
+            for (int i=0; i<size; i++) {
+                multithreadedVector.add(i);
+            }
+        });
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        end = System.currentTimeMillis();
+        System.out.println("time4: " + (end - start));
+        System.out.println("size2: " + multithreadedVector.size());
+
+    }
+}
+{% endhighlight %}
+<blockquote class="blockquote">
+    time1: 39
+    <br>
+    time2: 47
+    <br>
+    time3: 307
+    <br>
+    size1: 1001646
+    <br>
+    time4: 687
+    <br>
+    size2: 2000000
+</blockquote>
+<blockquote>
+    1. 单纯累加（time1和time2），Vector好像并不比ArrayList慢多少，和讲解有出入，不知道是不是jvm底层做了优化
+    <br>
+    2. 使用多线程累加，Vector为了保证线程安全牺牲了性能，当然ArrayList也可以用注释中的线程安全方式创建
+    <br>    
+        2.1 可能会出现异常
+        <br>    
+        Exception in thread "Thread-0" java.lang.ArrayIndexOutOfBoundsException: 2776
+        <br>    
+        at java.util.ArrayList.add(ArrayList.java:465)
+        <br>    
+        at VandA.lambda$main$0(VandA.java:37)
+        <br>    
+        at java.lang.Thread.run(Thread.java:750)
+        <br>    
+    3. 一般来说还是用ArrayList
+</blockquote>
+
+
+
+
+
+
