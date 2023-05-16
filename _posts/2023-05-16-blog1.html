@@ -1,0 +1,115 @@
+---
+layout: post
+title: "Java Stream API"
+subtitle: "Stream学习记录"
+date: 2023-05-16 8:01:13 +0800
+background: '/img/posts/06.jpg'
+---
+
+
+<h2 class="section-heading">Stream学习记录</h2>
+<img class="img-fluid" src="/img/05-16-07.png" alt="Demo Image">
+
+
+<p>
+    Stream无法重用，Stream使Java能够支持函数式编程
+</p>
+
+{% highlight java linenos %}
+    List<Integer> nums = Arrays.asList(4,5,7,8,9);
+
+    // nums.forEach(n -> System.out.println(n));
+
+    // Stream<Integer> data = nums.stream();
+
+    // long count = data.count();
+
+    // Stream<Integer> sorteddata = data.sorted();
+
+    // Stream<Integer> mappedData = data.map(n -> n * 2);
+
+//        nums.stream()
+//                .filter(n -> n%2==1)
+//                .sorted()
+//                .map(n -> n*2)
+//                .forEach(n -> System.out.println(n));
+
+    // 谓词
+    Predicate<Integer> predi = new Predicate<Integer>() {
+        @Override
+        public boolean test(Integer n) {
+            return n%2==0;
+        }
+    };
+
+    nums.stream()
+            .filter(predi)
+            .sorted()
+            .map(n -> n*2)
+            .forEach(n -> System.out.println(n));
+
+    // 相加
+//        nums.stream()
+//                .filter(predi)
+//                .sorted()
+//                .map(n -> n*2)
+//                .reduce(0, (c,e)->c+e);
+
+{% endhighlight %}
+
+<p>
+    有很多初始化方式
+</p>
+
+{% highlight java linenos %}
+    IntStream
+        .range(1, 10)
+        .skip(5)
+        .forEach(System.out::println);
+
+    int sum1 = IntStream
+                    .range(1, 10)
+                    .skip(5)
+                    .sum();
+
+    Stream.of("A", "B", "C")
+            .sorted()
+            .findFirst()
+            .ifPresent(System.out::println);
+
+    String[] names = {"a", "c", "q", "s"};
+    Arrays.stream(names)
+            .filter(x -> x.startsWith("a"))
+            .sorted()
+            .forEach(System.out::println);
+
+    Arrays.stream(new int[] {2,4,6,8,10})
+            .map(x -> x*x)
+            .average()
+            .ifPresent(System.out::println);
+
+    List<String> people = Arrays.asList("al", "sda", "sdaqwd");
+    people.stream()
+            .map(String::toLowerCase)
+            .filter(x -> x.startsWith("a"))
+            .forEach(System.out::println);
+
+    Stream<String> bands = Files.lines(Paths.get("abc.txt"));
+    //TODO
+    bands.close();
+
+    List<String> bands1 = Files.lines(Paths.get("abc.txt"))
+                                    .filter(x -> x.contains("a"))
+                                    .collect(Collectors.toList());
+
+
+    // 得到一些统计数据（平均值，最小最大值等等）
+    IntSummaryStatistics summary = IntStream.of(4,5,6,32,6)
+                                            .summaryStatistics();
+    System.out.println(summary);
+{% endhighlight %}
+
+
+
+
+

@@ -1,0 +1,253 @@
+---
+layout: post
+title: "GCH 2023-05-16 blog"
+subtitle: "本周学习记录"
+date: 2023-05-16 8:00:13 +0800
+background: '/img/posts/06.jpg'
+---
+
+<p>2023-05-16学习记录</p>
+
+<h2 class="section-heading">一、Apache & Nginx</h2>
+<p>
+    负载均衡器可简单分为两种，第一种在第四层即传输层进行工作，他们只是将请求路由分配到每个可用的服务器；
+    第二种如Apache(first&extension)和Nginx(fast&simple)在第七层即应用层进行工作，特别是处理HTTP请求
+</p>
+<p>
+    几个关键优势
+    <br>
+    1. Load Balance
+    <br>
+    2. Security（反向代理）
+    <br>
+    3. Caching
+    <br>
+    4. Compress压缩
+    <br>
+    5. 可处理SSL
+</p>
+
+<h2 class="section-heading">二、VM & Docker</h2>
+<p>
+    1. Define
+</p>
+<p>
+    对于VM，虚拟化被称为hypervisor，虚拟化管理硬件。
+    <br>
+    对于Docker，虚拟化操作系统
+</p>
+<p>
+    2. How work
+</p>
+<p>
+    Docker: Docker Engine(cgroup&namespace); Docker Images(Docker File); Docker Containers
+    <br>
+    VM: 裸机 or 托管
+</p>
+<p>
+    3. Use Case
+</p>
+<p>
+    VM: 不同操作系统；隔离（每个VM都运行自己独立的内核和OS）
+    <br>
+    Docker: 微服务；CI\CD；共享主机内核，开销更小
+</p>
+
+<h2 class="section-heading">三、Redis整合Springboot存储Session数据</h2>
+<img class="img-fluid" src="/img/05-16-01.png" alt="Demo Image">
+<blockquote>session based authentication</blockquote>
+<blockquote>第一次：c->s UserName&Passwd; s->c Cookie</blockquote>
+<blockquote>以后：c->s request with sessionID; s->c authentication</blockquote>
+
+<img class="img-fluid" src="/img/05-16-02.png" alt="Demo Image">
+<blockquote>Horizontal Scaling</blockquote>
+<blockquote>Load Balancer无法准确将request返回到存储对应session的服务器</blockquote>
+
+<img class="img-fluid" src="/img/05-16-03.png" alt="Demo Image">
+<blockquote>key-val store</blockquote>
+
+
+{% highlight xml linenos %}
+    ```pom.xml```
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.session</groupId>
+        <artifactId>spring-session-data-redis</artifactId>
+    </dependency>
+{% endhighlight %}
+{% highlight xml linenos %}
+    ```application.properties```
+    spring.session.store-type=redis
+{% endhighlight %}
+<blockquote class="blockquote">
+    spring-boot-starter-data-redis可以自动配置redis
+</blockquote>
+<p>
+    解决两个问题：1. 服务器宕机，用户鉴权状态不丢失； 2. 水平扩展服务器
+</p>
+
+
+<h2 class="section-heading">四、Kafka&Springboot</h2>
+{% highlight xml linenos %}
+    ```application.properties```
+    spring.kafka.bootstrap-servers=localhost:9092
+{% endhighlight %}
+<blockquote class="blockquote">
+    除了pom.xml的一些配置
+</blockquote>
+
+{% highlight java linenos %}
+    @Configuration
+    public class KafkaTopicConfig {
+
+        @Bean
+        public NewTopic gchTopic() {
+            return TopicBuilder.name("gch").build();
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    @Configuration添加配置
+    <br>
+    @Bean实例化
+</blockquote>
+
+
+{% highlight java linenos %}
+    @Configuration
+    public class KafkaProducerConfig {
+        // hold the bootstrap server url spring.kafka.bootstrap-servers
+        @Value("${spring.kafka.bootstrap-servers}")
+        private String bootstrapServers;
+
+        public Map<String, Object> producerConfig() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            return props;
+        }
+
+        @Bean
+        public ProducerFactory<String, String> producerFactory() {
+            return new DefaultKafkaProducerFactory<>(producerConfig());
+        }
+
+        @Bean
+        public KafkaTemplate<String, String> kafkaTemplate(ProducerFactory<String, String> producerFactory) {
+            return new KafkaTemplate<>(producerFactory);
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    @Value("${spring.kafka.bootstrap-servers}")
+    <br>
+    hold the bootstrap server url spring.kafka.bootstrap-servers
+</blockquote>
+
+
+{% highlight java linenos %}
+    @Bean
+    CommandLineRunner commandLineRunner(KafkaTemplate<String, String> kafkaTemplate) {
+        return args -> {
+            kafkaTemplate.send("gch", "hello");
+        };
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    示例，在主程序中发送消息
+</blockquote>
+
+
+{% highlight java linenos %}
+    @Configuration
+    public class KafkaConsumerConfig {
+        // hold the bootstrap server url spring.kafka.bootstrap-servers
+        @Value("${spring.kafka.bootstrap-servers}")
+        private String bootstrapServers;
+
+        public Map<String, Object> consumerConfig() {
+            Map<String, Object> props = new HashMap<>();
+            props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+            props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringSerializer.class);
+            return props;
+        }
+
+        @Bean
+        public ConsumerFactory<String, String> consumerFactory() {
+            return new DefaultKafkaConsumerFactory<>(consumerConfig());
+        }
+
+        @Bean
+        public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> factory(ConsumerFactory<String, String> consumerFactory) {
+            ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+            factory.setConsumerFactory(consumerFactory);
+            return factory;
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    消费者配置与生产者类似
+</blockquote>
+
+
+{% highlight java linenos %}
+    @Component
+    public class KafkaListeners {
+        @KafkaListener(
+                topics = "gch",
+                groupId = "groupId"
+        )
+        void Listener(String data) {
+            System.out.println(data);
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    监听事件
+    <br>
+    @Component在Springboot中直接配置成组件
+</blockquote>
+
+
+{% highlight java linenos %}
+    public record MessageRequest(String message) {}
+
+    @RestController
+    @RequestMapping("api/v1/messages")
+    public class MessageController {
+        private KafkaTemplate<String, String> kafkaTemplate;
+
+        public MessageController(KafkaTemplate<String, String> kafkaTemplate) {
+            this.kafkaTemplate = kafkaTemplate;
+        }
+
+        @PostMapping
+        public void publish(@RequestBody MessageRequest request) {
+            kafkaTemplate.send("gch", request.message());
+        }
+    }
+{% endhighlight %}
+<blockquote class="blockquote">
+    写一个REST API & Kafka
+    <br>
+    record 是Java14新特性，不用写get set了
+</blockquote>
+
+<img class="img-fluid" src="/img/05-16-04.png" alt="Demo Image">
+<img class="img-fluid" src="/img/05-16-05.png" alt="Demo Image">
+<img class="img-fluid" src="/img/05-16-06.png" alt="Demo Image">
+<p>
+    总结下来，和之前硕士的DDS很像，生产消费者模式
+</p>
+
+
+
+
+
+
+
