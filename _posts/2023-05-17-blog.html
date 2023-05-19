@@ -1,0 +1,104 @@
+---
+layout: post
+title: "Git"
+subtitle: "Git学习记录 随时更新"
+date: 2023-05-17 8:01:13 +0800
+background: '/img/posts/06.jpg'
+---
+
+
+<h2 class="section-heading">Git学习记录 随时更新</h2>
+
+<h2 class="section-heading">一、commit</h2>
+<img class="img-fluid" src="/img/git/1.png" alt="Demo Image">
+<p>
+    跟踪文件的Paths、Permissions、Contents
+</p>
+<p>
+    commit中没有目录directories的概念，没有重命名rename的概念
+</p>
+
+
+<h2 class="section-heading">二、checkout</h2>
+<img class="img-fluid" src="/img/git/2.png" alt="Demo Image">
+<p>
+    可以使head移动到指定的tag节点上
+</p>
+
+
+<h2 class="section-heading">三、branch</h2>
+<img class="img-fluid" src="/img/git/3.png" alt="Demo Image">
+<p>
+    一个head随你而动的名字
+</p>
+
+<h2 class="section-heading">四、merge</h2>
+<img class="img-fluid" src="/img/git/4.png" alt="Demo Image">
+<img class="img-fluid" src="/img/git/5.png" alt="Demo Image">
+<img class="img-fluid" src="/img/git/6.png" alt="Demo Image">
+<p>
+    直接改branch名字是一种特殊的merge（fast forward）
+</p>
+
+
+<h2 class="section-heading">五、fetch/pull</h2>
+<p>
+    pull是fetch的plus版本，fetch+merge可以近似等于pull
+</p>
+
+
+<h2 class="section-heading">六、push</h2>
+<img class="img-fluid" src="/img/git/7.png" alt="Demo Image">
+<p>
+    出现冲突时可以先merge到local再push
+</p>
+
+
+<h2 class="section-heading">七、diff/add</h2>
+<img class="img-fluid" src="/img/git/8.png" alt="Demo Image">
+<p>
+    diff不仅为work tree changes服务，可以比较任意两个commit, git diff X Y
+</p>
+
+
+<h2 class="section-heading">八、reset</h2>
+<img class="img-fluid" src="/img/05-16-07.png" alt="Demo Image">
+<p>
+    可以了解一下stash暂存区
+</p>
+
+
+<h2 class="section-heading">九、stash</h2>
+<img class="img-fluid" src="/img/git/9.png" alt="Demo Image">
+<p>
+    可以了解一下stash暂存区
+</p>
+
+<h2 class="section-heading">十、log</h2>
+<p>
+    可以有很多复杂操作
+</p>
+
+<h2 class="section-heading">十一、revert</h2>
+<img class="img-fluid" src="/img/git/10.png" alt="Demo Image">
+<p>
+    reset不能共享，revert可以共享，所以当你提交了一些错误的commit后又不能跑到别人电脑里去删，所以用revert。
+    但用revert时注意git不能真正理解你的含义，所以你要记住你之前认为是错误的几个commit
+</p>
+
+
+<h2 class="section-heading">十二、cherry-pick</h2>
+<img class="img-fluid" src="/img/git/11.png" alt="Demo Image">
+<p>
+    在feature分支上你可能修改好了某个bug，但总体来说你还没准备好将当前的整个feature推送到develop分支上；
+    这时可以用cherry-pick仅将这一小部分bugfix推送上去，同样git也不能真正理解这个操作，要注意避免conflict
+</p>
+
+
+<h2 class="section-heading">十三、rebase</h2>
+<img class="img-fluid" src="/img/git/12.png" alt="Demo Image">
+<img class="img-fluid" src="/img/git/13.png" alt="Demo Image">
+<p>
+    在feature分支上你可能修改好了某个bug，但总体来说你还没准备好将当前的整个feature推送到develop分支上；
+    这时可以用cherry-pick仅将这一小部分bugfix推送上去，同样git也不能真正理解这个操作，要注意避免conflict
+</p>
